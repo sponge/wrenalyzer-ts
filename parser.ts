@@ -1,5 +1,5 @@
-import Lexer from './lexer'
-import Token from './token'
+import Lexer from './lexer';
+import Token from './token';
 
 interface Node { type: String; }
 
@@ -256,11 +256,11 @@ class Parser {
     this.ignoreLine();
 
     const statements: Stmt[] = [];
-    while (this.peek() != Token.eof) {
+    while (this.peek() !== Token.eof) {
       const def = this.definition();
       statements.push(def);
-      console.log(def);
-      if (this.peek() == Token.eof) {
+      //console.log(def);
+      if (this.peek() === Token.eof) {
         break;
       }
 
@@ -293,7 +293,7 @@ class Parser {
 
         variables = [];
         while (true) {
-          variables.push(this.consume(Token.name, "Expect imported variable name."))
+          variables.push(this.consume(Token.name, "Expect imported variable name."));
           if (!this.match(Token.comma)) {
             break;
           }
@@ -405,7 +405,7 @@ class Parser {
     // TODO: Setters.
 
     let body: Body;
-    if (foreignKeyword == null) {
+    if (foreignKeyword === null) {
       this.consume(Token.leftBrace, "Expect '{' before method body.");
       body = this.finishBody(parameters);
     }
@@ -455,7 +455,7 @@ class Parser {
     if (this.match(Token.returnKeyword)) {
       const keyword = this.previous;
       let value: Expr;
-      if (this.peek() != Token.line) {
+      if (this.peek() !== Token.line) {
         value = this.expression();
       }
 
@@ -466,19 +466,19 @@ class Parser {
       const statements: Stmt[] = [];
       this.ignoreLine();
 
-      while (this.peek() != Token.rightBrace && this.peek() != Token.eof) {
+      while (this.peek() !== Token.rightBrace && this.peek() !== Token.eof) {
         statements.push(this.definition());
 
         // Don't require a newline after the last statement.
-        if (this.peek() == Token.rightBrace) {
+        if (this.peek() === Token.rightBrace) {
           break;
         }
 
-        this.consumeLine("Expect newline after statement.")
+        this.consumeLine("Expect newline after statement.");
       }
 
-      this.consume(Token.rightBrace, "Expect '}' after block.")
-      return <BlockStmt>{ type: 'BlockStmt', statements }
+      this.consume(Token.rightBrace, "Expect '}' after block.");
+      return <BlockStmt>{ type: 'BlockStmt', statements };
     }
 
     return this.expression();
@@ -503,7 +503,7 @@ class Parser {
     }
 
     const statements: Stmt[] = [];
-    while (this.peek() != Token.eof) {
+    while (this.peek() !== Token.eof) {
       statements.push(this.definition());
       this.consumeLine("Expect newline after statement.");
 
@@ -550,46 +550,46 @@ class Parser {
   }
 
   // logicalOr: logicalAnd ( "||" logicalAnd )*
-  logicalOr(): InfixExpr { return this.parseInfix([Token.pipePipe], () => this.logicalAnd()) }
+  logicalOr(): InfixExpr { return this.parseInfix([Token.pipePipe], () => this.logicalAnd()); }
 
   // logicalAnd: equality ( "&&" equality )*
-  logicalAnd(): InfixExpr { return this.parseInfix([Token.ampAmp], () => this.equality()) }
+  logicalAnd(): InfixExpr { return this.parseInfix([Token.ampAmp], () => this.equality()); }
 
   // equality: typeTest ( equalityOperator typeTest )*
   // equalityOperator: "==" | "!="
-  equality(): InfixExpr { return this.parseInfix(EQUALITY_OPERATORS, () => this.typeTest()) }
+  equality(): InfixExpr { return this.parseInfix(EQUALITY_OPERATORS, () => this.typeTest()); }
 
   // typeTest: comparison ( "is" comparison )*
-  typeTest(): InfixExpr { return this.parseInfix([Token.isKeyword], () => this.comparison()) }
+  typeTest(): InfixExpr { return this.parseInfix([Token.isKeyword], () => this.comparison()); }
 
   // comparison: bitwiseOr ( comparisonOperator bitwiseOr )*
   // comparisonOperator: "<" | ">" | "<=" | ">="
-  comparison(): InfixExpr { return this.parseInfix(COMPARISON_OPERATORS, () => this.bitwiseOr()) }
+  comparison(): InfixExpr { return this.parseInfix(COMPARISON_OPERATORS, () => this.bitwiseOr()); }
 
   // bitwiseOr: bitwiseXor ( "|" bitwiseXor )*
-  bitwiseOr(): InfixExpr { return this.parseInfix([Token.pipe], () => this.bitwiseXor()) }
+  bitwiseOr(): InfixExpr { return this.parseInfix([Token.pipe], () => this.bitwiseXor()); }
 
   // bitwiseXor: bitwiseAnd ( "^" bitwiseAnd )*
-  bitwiseXor(): InfixExpr { return this.parseInfix([Token.caret], () => this.bitwiseAnd()) }
+  bitwiseXor(): InfixExpr { return this.parseInfix([Token.caret], () => this.bitwiseAnd()); }
 
   // bitwiseAnd: bitwiseShift ( "&" bitwiseShift )*
-  bitwiseAnd(): InfixExpr { return this.parseInfix([Token.amp], () => this.bitwiseShift()) }
+  bitwiseAnd(): InfixExpr { return this.parseInfix([Token.amp], () => this.bitwiseShift()); }
 
   // bitwiseShift: range ( bitwiseShiftOperator range )*
   // bitwiseShiftOperator: "<<" | ">>"
-  bitwiseShift(): InfixExpr { return this.parseInfix(BITWISE_SHIFT_OPERATORS, () => this.range()) }
+  bitwiseShift(): InfixExpr { return this.parseInfix(BITWISE_SHIFT_OPERATORS, () => this.range()); }
 
   // range: term ( rangeOperator term )*
   // rangeOperator: ".." | ".."
-  range(): InfixExpr { return this.parseInfix(RANGE_OPERATORS, () => this.term()) }
+  range(): InfixExpr { return this.parseInfix(RANGE_OPERATORS, () => this.term()); }
 
   // term: factor ( termOperator factor )*
   // termOperator: "+" | "-"
-  term(): InfixExpr { return this.parseInfix(TERM_OPERATORS, () => this.factor()) }
+  term(): InfixExpr { return this.parseInfix(TERM_OPERATORS, () => this.factor()); }
 
   // factor: prefix ( factorOperator prefix )*
   // factorOperator: "*" | "/" | "%"
-  factor(): InfixExpr { return this.parseInfix(FACTOR_OPERATORS, () => this.prefix()) }
+  factor(): InfixExpr { return this.parseInfix(FACTOR_OPERATORS, () => this.prefix()); }
 
   // prefix: ("-" | "!" | "~")* call
   prefix(): Expr {
@@ -612,14 +612,14 @@ class Parser {
         const rightBracket = this.consume(Token.rightBracket, "Expect ']' after subscript arguments.");
         expr = <SubscriptExpr>{ receiver: expr, leftBracket, args, rightBracket };
       } else if (this.match(Token.dot)) {
-        const name = this.consume(Token.name, "Expect method name after '.'.")
+        const name = this.consume(Token.name, "Expect method name after '.'.");
         expr = this.methodCall(expr, name);
       } else {
-        break
+        break;
       }
     }
 
-    return expr
+    return expr;
   }
 
   // Parses the argument list for a method call and creates a call expression
@@ -708,28 +708,28 @@ class Parser {
   //   | "true" | "false" | "null" | "this"
   //   | Field | StaticField | Number
   primary(): Expr {
-    if (this.match(Token.leftParen)) return this.grouping();
-    if (this.match(Token.leftBracket)) return this.listLiteral();
-    if (this.match(Token.leftBrace)) return this.mapLiteral();
-    if (this.match(Token.name)) return this.methodCall(null, this.previous);
-    if (this.match(Token.superKeyword)) return this.superCall();
+    if (this.match(Token.leftParen)) { return this.grouping(); }
+    if (this.match(Token.leftBracket)) { return this.listLiteral(); }
+    if (this.match(Token.leftBrace)) { return this.mapLiteral(); }
+    if (this.match(Token.name)) { return this.methodCall(null, this.previous); }
+    if (this.match(Token.superKeyword)) { return this.superCall(); }
 
-    if (this.match(Token.falseKeyword)) return <BoolExpr>{ type: 'BoolExpr', value: this.previous };
-    if (this.match(Token.trueKeyword)) return <BoolExpr>{ type: 'BoolExpr', value: this.previous };
-    if (this.match(Token.nullKeyword)) return <NullExpr>{ type: 'NullExpr', value: this.previous };
-    if (this.match(Token.thisKeyword)) return <ThisExpr>{ type: 'ThisExpr', keyword: this.previous };
+    if (this.match(Token.falseKeyword)) { return <BoolExpr>{ type: 'BoolExpr', value: this.previous }; }
+    if (this.match(Token.trueKeyword)) { return <BoolExpr>{ type: 'BoolExpr', value: this.previous }; }
+    if (this.match(Token.nullKeyword)) { return <NullExpr>{ type: 'NullExpr', value: this.previous }; }
+    if (this.match(Token.thisKeyword)) { return <ThisExpr>{ type: 'ThisExpr', keyword: this.previous }; }
 
     // TODO: Error if not inside class.
-    if (this.match(Token.field)) return <FieldExpr>{ type: 'FieldExpr', name: this.previous };
-    if (this.match(Token.staticField)) return <StaticFieldExpr>{ type: 'StaticFieldExpr', name: this.previous };
+    if (this.match(Token.field)) { return <FieldExpr>{ type: 'FieldExpr', name: this.previous }; }
+    if (this.match(Token.staticField)) { return <StaticFieldExpr>{ type: 'StaticFieldExpr', name: this.previous }; }
 
-    if (this.match(Token.number)) return <NumExpr>{ type: 'NumExpr', value: this.previous };
-    if (this.match(Token.string)) return <StringExpr>{ type: 'StringExpr', value: this.previous };
+    if (this.match(Token.number)) { return <NumExpr>{ type: 'NumExpr', value: this.previous }; }
+    if (this.match(Token.string)) { return <StringExpr>{ type: 'StringExpr', value: this.previous }; }
 
-    if (this.peek() == Token.interpolation) return this.stringInterpolation();
+    if (this.peek() === Token.interpolation) { return this.stringInterpolation(); }
     // TODO: Token.super.
 
-    this.error("Expect expression.")
+    this.error("Expect expression.");
     // Make a fake node so that we don't have to worry about null later.
     // TODO: Should this be an error node?
     return <NullExpr>{ value: this.previous };
@@ -754,7 +754,7 @@ class Parser {
 
     this.ignoreLine();
 
-    while (this.peek() != Token.rightBracket) {
+    while (this.peek() !== Token.rightBracket) {
       elements.push(this.expression());
 
       this.ignoreLine();
@@ -778,9 +778,9 @@ class Parser {
 
     this.ignoreLine();
 
-    while (this.peek() != Token.rightBrace) {
+    while (this.peek() !== Token.rightBrace) {
       const key = this.expression();
-      this.consume(Token.colon, "Expect ':' after map key.")
+      this.consume(Token.colon, "Expect ':' after map key.");
 
       const value = this.expression();
       entries.push({ type:'MapEntry', key, value });
@@ -790,7 +790,7 @@ class Parser {
         break;
       }
 
-      const rightBrace = this.consume(Token.rightBrace, "Expect '}' after map entries.")
+      const rightBrace = this.consume(Token.rightBrace, "Expect '}' after map entries.");
       return { type:'MapExpr', leftBrace, entries, rightBrace };
     }
   }
@@ -809,8 +809,8 @@ class Parser {
 
   // stringInterpolation: (interpolation expression )? string
   stringInterpolation(): InterpolationExpr {
-    let strings: Token[] = []
-    let expressions: Expr[] = []
+    let strings: Token[] = [];
+    let expressions: Expr[] = [];
 
     while (this.match(Token.interpolation)) {
       strings.push(this.previous);
@@ -821,7 +821,7 @@ class Parser {
     // generate the right token sequence.
     strings.push(this.consume(Token.string, "Expect end of string interpolation."));
 
-    return { type:'InterpolationExpr', strings, expressions }
+    return { type:'InterpolationExpr', strings, expressions };
   }
 
   // Utility methods.
@@ -906,13 +906,14 @@ class Parser {
 
   // Returns the type of the next token.
   peek(): string {
-    if (this.current === null) this.current = this.lexer.readToken();
+    if (this.current === null) { this.current = this.lexer.readToken(); }
     return this.current.type;
   }
 
   error(message: string): void {
-    this.problems.push([message, [this.current !== null ? this.current : this.previous]])
+    this.problems.push([message, [this.current !== null ? this.current : this.previous]]);
   }
 }
 
-export default Parser
+export default Parser;
+export { Module, ImportStmt };

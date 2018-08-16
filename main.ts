@@ -1,7 +1,7 @@
-import Lexer from './lexer'
-import Parser from './parser'
-import SourceFile from './sourcefile'
-import * as fs from 'fs'
+import Lexer from './lexer';
+import Parser from './parser';
+import SourceFile from './sourcefile';
+import * as fs from 'fs';
 
 class Startup {
   public static main(): number {
@@ -13,7 +13,7 @@ class Startup {
     const parser = new Parser(lexer);
     const ast = parser.parseModule();
 
-    //console.log(ast);
+    console.log(ast.statements.length);
 
     return 0;
   }

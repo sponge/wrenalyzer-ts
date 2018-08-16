@@ -1,8 +1,8 @@
-import Chars from './chars'
-import Token from './token'
-import SourceFile from './sourcefile'
+import Chars from './chars';
+import Token from './token';
+import SourceFile from './sourcefile';
 
-const KEYWORDS = {
+const KEYWORDS:{ [s: string]: string; } = {
   "break": Token.breakKeyword,
   "class": Token.classKeyword,
   "construct": Token.constructKeyword,
@@ -115,26 +115,26 @@ class Lexer {
 
     // Handle "<", "<<", and "<=".
     if (c === Chars.less) {
-      if (this.match(Chars.less)) return this.makeToken(Token.lessLess);
-      if (this.match(Chars.equal)) return this.makeToken(Token.lessEqual);
+      if (this.match(Chars.less)) { return this.makeToken(Token.lessLess); }
+      if (this.match(Chars.equal)) { return this.makeToken(Token.lessEqual); }
       return this.makeToken(Token.less);
     }
 
     // Handle ">", ">>", and ">=".
     if (c === Chars.greater) {
-      if (this.match(Chars.greater)) return this.makeToken(Token.greaterGreater);
-      if (this.match(Chars.equal)) return this.makeToken(Token.greaterEqual);
+      if (this.match(Chars.greater)) { return this.makeToken(Token.greaterGreater); }
+      if (this.match(Chars.equal)) { return this.makeToken(Token.greaterEqual); }
       return this.makeToken(Token.greater);
     }
 
-    if (c === Chars.underscore) return this.readField();
-    if (c === Chars.quote) return this.readString();
+    if (c === Chars.underscore) { return this.readField(); }
+    if (c === Chars.quote) { return this.readString(); }
 
-    if (c === Chars.zero && this.peek() === Chars.lowerX) return this.readHexNumber();
-    if (Chars.isDigit(c)) return this.readNumber();
-    if (Chars.isAlpha(c)) return this.readName();
+    if (c === Chars.zero && this.peek() === Chars.lowerX) { return this.readHexNumber(); }
+    if (Chars.isDigit(c)) { return this.readNumber(); }
+    if (Chars.isAlpha(c)) { return this.readName(); }
 
-    return this.makeToken(Token.error)  
+    return this.makeToken(Token.error);  
   }
 
   // Skips over whitespace and comments.
@@ -147,17 +147,17 @@ class Lexer {
       } else if (c === Chars.slash && this.peek(1) === Chars.slash) {
         // A line comment stops at the newline since newlines are significant.
         while (this.peek() !== Chars.lineFeed && !this.isAtEnd) {
-          this.advance()
+          this.advance();
         }
       } else if (c === Chars.slash && this.peek(1) === Chars.star) {
         this.advance();
         this.advance();
       } else if (c === Chars.slash && this.peek(1) === Chars.star) {
-        this.advance()
-        this.advance()
+        this.advance();
+        this.advance();
 
         // Block comments can nest.
-        let nesting = 1
+        let nesting = 1;
         while (nesting > 0) {
           // TODO: Report error.
           if (this.isAtEnd) {
@@ -180,7 +180,7 @@ class Lexer {
           }
         }
       } else {
-        break
+        break;
       }
     }
   }
@@ -193,7 +193,7 @@ class Lexer {
     }
 
      // Read the rest of the name.
-    while (this.match((c) => Chars.isAlphaNumeric(c))) { }
+    while (this.match((c: number) => Chars.isAlphaNumeric(c))) { }
     return this.makeToken(type);
   }
 
@@ -210,18 +210,18 @@ class Lexer {
         this.advance();
       } else if (c === Chars.percent) {
         // Consume the '('.
-        this.advance()
+        this.advance();
         // TODO: Handle missing '('.
-        this.interpolations.push(1)
-        type = Token.interpolation
-        break
+        this.interpolations.push(1);
+        type = Token.interpolation;
+        break;
       } else if (c === Chars.quote) {
         break;
       }
     }
 
     // TODO: Handle unterminated string.
-    return this.makeToken(type)
+    return this.makeToken(type);
   }
 
   // Reads a number literal.
@@ -230,14 +230,14 @@ class Lexer {
     this.advance();
 
     // Read the rest of the number.
-    while (this.match((c) => Chars.isHexDigit(c))) { }
+    while (this.match((c: number) => Chars.isHexDigit(c))) { }
     return this.makeToken(Token.number);
   }
 
   // Reads a number literal.
   private readNumber(): Token {
     // Read the rest of the number.
-    while (this.match((c) => Chars.isDigit(c))) { }
+    while (this.match((c: number) => Chars.isDigit(c))) { }
 
     return this.makeToken(Token.number);
   }
@@ -245,10 +245,10 @@ class Lexer {
   // Reads an identifier or keyword token.
   private readName(): Token {
     // Read the rest of the name.
-    while (this.match((c) => Chars.isAlphaNumeric(c))) { }
+    while (this.match((c: number) => Chars.isAlphaNumeric(c))) { }
 
     const text = this.source.substring(this.start, this.current - this.start);
-    let type = Token.name;
+    let type: string = Token.name;
     if (text in KEYWORDS) {
       type = KEYWORDS[text];
     }
@@ -302,4 +302,4 @@ class Lexer {
   }
 }
 
-export default Lexer
+export default Lexer;

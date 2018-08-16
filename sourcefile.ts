@@ -1,4 +1,4 @@
-import Chars from './chars'
+import Chars from './chars';
 
 class SourceFile {
   public path: string;
@@ -18,7 +18,7 @@ class SourceFile {
   }
 
   // Gets the byte at i in the source file.
-  public index(i): number { return this.string.charCodeAt(i); }
+  public index(i: number): number { return this.string.charCodeAt(i); }
 
   // The number of bytes in the source file.
   get length(): number { return this.string.length; }
@@ -39,7 +39,6 @@ class SourceFile {
 
   // Gets the 1-based line that the byte at offset lies on.
   public lineAt(offset: number): number {
-    let line = 0;
     for (let i = 0; i < this.lines.length; i++) {
       if (offset < this.lines[i]) {
         return i;
@@ -50,7 +49,7 @@ class SourceFile {
 
   // Gets the source text of [line], where 1 is the first line.
   public getLine(line: number): string {
-    return this.string.substring(this.lines[line - 1], this.lines[line] - 1)
+    return this.string.substring(this.lines[line - 1], this.lines[line] - 1);
   }
 
   // Gets a substring of the source string starting at [start] with [length] bytes
@@ -59,4 +58,4 @@ class SourceFile {
   }
 }
 
-export default SourceFile
+export default SourceFile;
