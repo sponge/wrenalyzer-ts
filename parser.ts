@@ -257,7 +257,9 @@ class Parser {
 
     const statements: Stmt[] = [];
     while (this.peek() != Token.eof) {
-      statements.push(this.definition());
+      const def = this.definition();
+      statements.push(def);
+      console.log(def);
       if (this.peek() == Token.eof) {
         break;
       }
@@ -712,17 +714,17 @@ class Parser {
     if (this.match(Token.name)) return this.methodCall(null, this.previous);
     if (this.match(Token.superKeyword)) return this.superCall();
 
-    if (this.match(Token.falseKeyword)) return <BoolExpr>{ value: this.previous };
-    if (this.match(Token.trueKeyword)) return <BoolExpr>{ value: this.previous };
-    if (this.match(Token.nullKeyword)) return <NullExpr>{ value: this.previous };
-    if (this.match(Token.thisKeyword)) return <ThisExpr>{ keyword: this.previous };
+    if (this.match(Token.falseKeyword)) return <BoolExpr>{ type: 'BoolExpr', value: this.previous };
+    if (this.match(Token.trueKeyword)) return <BoolExpr>{ type: 'BoolExpr', value: this.previous };
+    if (this.match(Token.nullKeyword)) return <NullExpr>{ type: 'NullExpr', value: this.previous };
+    if (this.match(Token.thisKeyword)) return <ThisExpr>{ type: 'ThisExpr', keyword: this.previous };
 
     // TODO: Error if not inside class.
-    if (this.match(Token.field)) return <FieldExpr>{ name: this.previous };
-    if (this.match(Token.staticField)) return <StaticFieldExpr>{ name: this.previous };
+    if (this.match(Token.field)) return <FieldExpr>{ type: 'FieldExpr', name: this.previous };
+    if (this.match(Token.staticField)) return <StaticFieldExpr>{ type: 'StaticFieldExpr', name: this.previous };
 
-    if (this.match(Token.number)) return <NumExpr>{ value: this.previous };
-    if (this.match(Token.string)) return <StringExpr>{ value: this.previous };
+    if (this.match(Token.number)) return <NumExpr>{ type: 'NumExpr', value: this.previous };
+    if (this.match(Token.string)) return <StringExpr>{ type: 'StringExpr', value: this.previous };
 
     if (this.peek() == Token.interpolation) return this.stringInterpolation();
     // TODO: Token.super.

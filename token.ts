@@ -67,10 +67,10 @@ class Token {
   static error = "error"
   static eof = "eof"
 
-  private source: SourceFile;
-  private type: string;
-  private start: number;
-  private length: number;
+  source: SourceFile;
+  type: string;
+  start: number;
+  length: number;
 
   constructor(source: SourceFile, type: string, start: number, length: number) {
     this.source = source

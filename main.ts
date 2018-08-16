@@ -13,7 +13,7 @@ class Startup {
     const parser = new Parser(lexer);
     const ast = parser.parseModule();
 
-    console.log(ast);
+    //console.log(ast);
 
     return 0;
   }
