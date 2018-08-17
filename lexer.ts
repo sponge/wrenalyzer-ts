@@ -248,7 +248,7 @@ class Lexer {
     while (this.match((c: number) => Chars.isAlphaNumeric(c))) { }
 
     const text = this.source.substring(this.start, this.current - this.start);
-    let type: string | undefined = Token.tname;
+    let type: string = Token.tname;
     if (KEYWORDS.has(text)) {
       type = KEYWORDS.get(text);
     }
