@@ -789,10 +789,11 @@ class Parser {
       if (!this.match(Token.comma)) {
         break;
       }
-
-      const rightBrace = this.consume(Token.rightBrace, "Expect '}' after map entries.");
-      return { type:'MapExpr', leftBrace, entries, rightBrace };
+      this.ignoreLine();
     }
+
+    const rightBrace = this.consume(Token.rightBrace, "Expect '}' after map entries.");
+    return { type:'MapExpr', leftBrace, entries, rightBrace };
   }
 
   superCall(): SuperExpr {
