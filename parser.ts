@@ -24,12 +24,12 @@ interface Method {
   constructKeyword: Token;
   name: Token;
   body: Body;
-  parameters: Expr[];
+  parameters: Token[];
 }
 
 interface Body {
   type: String;
-  parameters: Expr[];
+  parameters: Token[];
   expression?: Expr;
   statements: Stmt[];
 }
@@ -485,7 +485,7 @@ class Parser {
   }
 
   // Parses the rest of a method or block argument body.
-  finishBody(parameters: Expr[]): Body {
+  finishBody(parameters: Token[]): Body {
     // An empty block.
     if (this.match(Token.rightBrace)) {
       return { type: 'Body', parameters, expression: null, statements: [] };
@@ -656,7 +656,7 @@ class Parser {
 
     let blockArgument: Body;
     if (this.match(Token.leftBrace)) {
-      let parameters: Expr[];
+      let parameters: Token[];
       if (this.match(Token.pipe)) {
         parameters = this.parameterList();
         this.consume(Token.pipe, "Expect '|' after block parameters.");
