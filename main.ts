@@ -22,6 +22,7 @@ class Startup {
     const parser = new Parser(lexer);
     const ast = parser.parseModule();
 
+    console.log(parser.problems);
     console.log(ast.statements.length);
 
     return 0;

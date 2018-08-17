@@ -293,7 +293,7 @@ class Parser {
 
         variables = [];
         while (true) {
-          variables.push(this.consume(Token.name, "Expect imported variable name."));
+          variables.push(this.consume(Token.tname, "Expect imported variable name."));
           if (!this.match(Token.comma)) {
             break;
           }
@@ -306,7 +306,7 @@ class Parser {
     }
 
     if (this.match(Token.varKeyword)) {
-      const name = this.consume(Token.name, "Expect variable name.");
+      const name = this.consume(Token.tname, "Expect variable name.");
       let initializer: Expr;
       if (this.match(Token.equal)) {
         initializer = this.expression();
@@ -320,13 +320,13 @@ class Parser {
 
   // Parses the rest of a class definition after the "class" token.
   finishClass(foreignKeyword: Token): ClassStmt {
-    const name = this.consume(Token.name, "Expect class name.");
+    const name = this.consume(Token.tname, "Expect class name.");
 
     let superclass: Token;
     if (this.match(Token.isKeyword)) {
       // TODO: This is different from the VM (which is wrong). Need to make
       // sure we don't parse the class body as a block argument.
-      superclass = this.consume(Token.name, "Expect name of superclass.");
+      superclass = this.consume(Token.tname, "Expect name of superclass.");
     }
 
     const methods: Method[] = [];
@@ -383,7 +383,7 @@ class Parser {
     } else if (this.matchAny([Token.bang, Token.tilde])) {
       allowParameters = false;
     } else {
-      this.consume(Token.name, "Expect method name.");
+      this.consume(Token.tname, "Expect method name.");
       allowParameters = true;
     }
     name = this.previous;
@@ -405,7 +405,7 @@ class Parser {
     // TODO: Setters.
 
     let body: Body;
-    if (foreignKeyword === null) {
+    if (foreignKeyword === undefined) {
       this.consume(Token.leftBrace, "Expect '{' before method body.");
       body = this.finishBody(parameters);
     }
@@ -434,7 +434,7 @@ class Parser {
 
     if (this.match(Token.forKeyword)) {
       this.consume(Token.leftParen, "Expect '(' after 'for'.");
-      const variable = this.consume(Token.name, "Expect for loop variable name.");
+      const variable = this.consume(Token.tname, "Expect for loop variable name.");
       this.consume(Token.inKeyword, "Expect 'in' after loop variable.");
       this.ignoreLine();
       const iterator = this.expression();
@@ -612,7 +612,7 @@ class Parser {
         const rightBracket = this.consume(Token.rightBracket, "Expect ']' after subscript arguments.");
         expr = <SubscriptExpr>{ receiver: expr, leftBracket, args, rightBracket };
       } else if (this.match(Token.dot)) {
-        const name = this.consume(Token.name, "Expect method name after '.'.");
+        const name = this.consume(Token.tname, "Expect method name after '.'.");
         expr = this.methodCall(expr, name);
       } else {
         break;
@@ -642,11 +642,11 @@ class Parser {
   finishCall(): [Expr[], Body] {
     let args: Expr[];
 
-    if (this.match(Token.rightParen)) {
+    if (this.match(Token.leftParen)) {
       // Allow an empty argument list. Note that we treat this differently than
       // a getter (no argument list). The former will have a `null` argument
       // list and the latter will have an empty one.
-      if (this.match(Token.leftParen)) {
+      if (this.match(Token.rightParen)) {
         args = [];
       } else {
         args = this.argumentList();
@@ -690,7 +690,7 @@ class Parser {
     let parameters: Token[] = [];
 
     while (true) {
-      parameters.push(this.consume(Token.name, "Expect parameter name."));
+      parameters.push(this.consume(Token.tname, "Expect parameter name."));
       if (!this.match(Token.comma)) {
         break;
       }
@@ -711,7 +711,7 @@ class Parser {
     if (this.match(Token.leftParen)) { return this.grouping(); }
     if (this.match(Token.leftBracket)) { return this.listLiteral(); }
     if (this.match(Token.leftBrace)) { return this.mapLiteral(); }
-    if (this.match(Token.name)) { return this.methodCall(null, this.previous); }
+    if (this.match(Token.tname)) { return this.methodCall(null, this.previous); }
     if (this.match(Token.superKeyword)) { return this.superCall(); }
 
     if (this.match(Token.falseKeyword)) { return <BoolExpr>{ type: 'BoolExpr', value: this.previous }; }
@@ -800,7 +800,7 @@ class Parser {
 
     if (this.match(Token.dot)) {
       // It's a named super call.
-      name = this.consume(Token.name, "Expect method name after 'super.'.");
+      name = this.consume(Token.tname, "Expect method name after 'super.'.");
     }
 
     const args = this.finishCall();
@@ -848,7 +848,7 @@ class Parser {
       return null;
     }
 
-    return this.consume();
+    return this.consumeNext();
   }
 
   // Consumes and returns the next token if its type is contained in the list
@@ -885,23 +885,23 @@ class Parser {
     this.ignoreLine();
   }
 
-  consume(type?: string, message?: string): Token {
-    if (!type && !message) {
-      // Reads and consumes the next token.
-      this.peek();
-      this.previous = this.current;
-      this.current = null;
-      return this.previous;
-    } else {
-      // Reads the next token if it is of [type]. Otherwise, discards it and
-      // reports an error with [message]
-      const token = this.consume();
-      if (token.type !== type) {
-        this.error(message);
-      }
+  // Reads and consumes the next token.
+  consumeNext(): Token {
+    this.peek();
+    this.previous = this.current;
+    this.current = null;
+    return this.previous;
+  }
 
-      return token;
+  // Reads the next token if it is of [type]. Otherwise, discards it and
+  // reports an error with [message]
+  consume(type: string, message: string): Token {
+    const token = this.consumeNext();
+    if (token.type !== type) {
+      this.error(message);
     }
+
+    return token;
   }
 
   // Returns the type of the next token.
