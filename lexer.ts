@@ -2,27 +2,27 @@ import Chars from './chars';
 import Token from './token';
 import SourceFile from './sourcefile';
 
-const KEYWORDS:{ [s: string]: string; } = {
-  "break": Token.breakKeyword,
-  "class": Token.classKeyword,
-  "construct": Token.constructKeyword,
-  "else": Token.elseKeyword,
-  "false": Token.falseKeyword,
-  "for": Token.forKeyword,
-  "foreign": Token.foreignKeyword,
-  "if": Token.ifKeyword,
-  "import": Token.importKeyword,
-  "in": Token.inKeyword,
-  "is": Token.isKeyword,
-  "null": Token.nullKeyword,
-  "return": Token.returnKeyword,
-  "static": Token.staticKeyword,
-  "super": Token.superKeyword,
-  "this": Token.thisKeyword,
-  "true": Token.trueKeyword,
-  "var": Token.varKeyword,
-  "while": Token.whileKeyword
-};
+const KEYWORDS: Map<string, string> = new Map([
+  ["break", Token.breakKeyword],
+  ["class", Token.classKeyword],
+  ["construct", Token.constructKeyword],
+  ["else", Token.elseKeyword],
+  ["false", Token.falseKeyword],
+  ["for", Token.forKeyword],
+  ["foreign", Token.foreignKeyword],
+  ["if", Token.ifKeyword],
+  ["import", Token.importKeyword],
+  ["in", Token.inKeyword],
+  ["is", Token.isKeyword],
+  ["null", Token.nullKeyword],
+  ["return", Token.returnKeyword],
+  ["static", Token.staticKeyword],
+  ["super", Token.superKeyword],
+  ["this", Token.thisKeyword],
+  ["true", Token.trueKeyword],
+  ["var", Token.varKeyword],
+  ["while", Token.whileKeyword],
+]);
 
 // Data table for tokens that are tokenized using maximal munch.
 //
@@ -248,9 +248,9 @@ class Lexer {
     while (this.match((c: number) => Chars.isAlphaNumeric(c))) { }
 
     const text = this.source.substring(this.start, this.current - this.start);
-    let type: string = Token.name;
-    if (text in KEYWORDS) {
-      type = KEYWORDS[text];
+    let type: string = Token.tname;
+    if (KEYWORDS.has(text)) {
+      type = KEYWORDS.get(text);
     }
 
     return new Token(this.source, type, this.start, this.current - this.start);
