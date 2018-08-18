@@ -610,7 +610,7 @@ class Parser {
         const leftBracket = this.previous;
         const args = this.argumentList();
         const rightBracket = this.consume(Token.rightBracket, "Expect ']' after subscript arguments.");
-        expr = <SubscriptExpr>{ receiver: expr, leftBracket, args, rightBracket };
+        expr = <SubscriptExpr>{ type:'SubscriptExpr', receiver: expr, leftBracket, args, rightBracket };
       } else if (this.match(Token.dot)) {
         const name = this.consume(Token.tname, "Expect method name after '.'.");
         expr = this.methodCall(expr, name);
