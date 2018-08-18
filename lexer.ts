@@ -250,7 +250,7 @@ class Lexer {
     const text = this.source.substring(this.start, this.current - this.start);
     let type: string = Token.tname;
     if (KEYWORDS.has(text)) {
-      type = KEYWORDS.get(text);
+      type = KEYWORDS.get(text)!;
     }
 
     return new Token(this.source, type, this.start, this.current - this.start);

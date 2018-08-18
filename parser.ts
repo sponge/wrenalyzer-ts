@@ -19,11 +19,11 @@ interface MapEntry {
 
 interface Method {
   type: String;
-  foreignKeyword: Token;
-  staticKeyword: Token;
-  constructKeyword: Token;
-  name: Token;
-  body: Body;
+  foreignKeyword?: Token;
+  staticKeyword?: Token;
+  constructKeyword?: Token;
+  name?: Token;
+  body?: Body;
   parameters: Token[];
 }
 
@@ -31,13 +31,13 @@ interface Body {
   type: String;
   parameters: Token[];
   expression?: Expr;
-  statements: Stmt[];
+  statements?: Stmt[];
 }
 
 interface ListExpr extends Expr {
-  leftBracket: Token;
+  leftBracket?: Token;
   elements: Expr[];
-  rightBracket: Token;
+  rightBracket?: Token;
 }
 
 interface ThisExpr extends Expr {
@@ -57,10 +57,10 @@ interface FieldExpr extends Expr {
 }
 
 interface CallExpr extends Expr {
-  receiver: Expr;
+  receiver?: Expr;
   name: Token;
   args: Expr[];
-  blockArgument: Body;
+  blockArgument?: Body;
 }
 
 interface PrefixExpr extends Expr {
@@ -69,9 +69,9 @@ interface PrefixExpr extends Expr {
 }
 
 interface GroupingExpr extends Expr {
-  leftParen: Token;
+  leftParen?: Token;
   expression: Expr;
-  rightParen: Token;
+  rightParen?: Token;
 }
 
 interface AssignmentExpr extends Expr {
@@ -87,9 +87,9 @@ interface InfixExpr extends Expr {
 }
 
 interface MapExpr extends Expr {
-  leftBrace: Token;
+  leftBrace?: Token;
   entries: MapEntry[];
-  rightBrace: Token;
+  rightBrace?: Token;
 }
 
 interface ConditionalExpr extends Expr {
@@ -105,9 +105,9 @@ interface NumExpr extends Expr {
 }
 
 interface SuperExpr extends Expr {
-  name: Token;
+  name?: Token;
   args: Expr[];
-  blockArgument: Body;
+  blockArgument?: Body;
 }
 
 interface StringExpr extends Expr {
@@ -171,9 +171,9 @@ interface WhileStmt extends Stmt {
 }
 
 interface ClassStmt extends Stmt {
-  foreignKeyword: Token;
+  foreignKeyword?: Token;
   name: Token;
-  superclass: Token;
+  superclass?: Token;
   methods: Method[];
 }
 
@@ -242,8 +242,8 @@ const INFIX_OPERATORS = [
 
 class Parser {
   lexer: Lexer;
-  current: Token;
-  previous: Token;
+  current?: Token;
+  previous?: Token;
   problems: any[];
 
   constructor(lexer: Lexer) {
@@ -274,7 +274,7 @@ class Parser {
 
   definition(): Stmt {
     if (this.match(Token.classKeyword)) {
-      return this.finishClass(null);
+      return this.finishClass();
     }
 
     if (this.match(Token.foreignKeyword)) {
@@ -283,9 +283,9 @@ class Parser {
       return this.finishClass(foreignKeyword);
     }
 
+    let variables: Token[] = [];
     if (this.match(Token.importKeyword)) {
       const path = this.consume(Token.string, "Expect import path.");
-      let variables: Token[];
 
       // Parse the variable list, if there is one.
       if (this.match(Token.forKeyword)) {
@@ -307,7 +307,7 @@ class Parser {
 
     if (this.match(Token.varKeyword)) {
       const name = this.consume(Token.tname, "Expect variable name.");
-      let initializer: Expr;
+      let initializer: Expr | undefined;
       if (this.match(Token.equal)) {
         initializer = this.expression();
       }
@@ -319,10 +319,10 @@ class Parser {
   }
 
   // Parses the rest of a class definition after the "class" token.
-  finishClass(foreignKeyword: Token): ClassStmt {
+  finishClass(foreignKeyword?: Token): ClassStmt {
     const name = this.consume(Token.tname, "Expect class name.");
 
-    let superclass: Token;
+    let superclass: Token | undefined;
     if (this.match(Token.isKeyword)) {
       // TODO: This is different from the VM (which is wrong). Need to make
       // sure we don't parse the class body as a block argument.
@@ -351,25 +351,26 @@ class Parser {
     // Note: This parses more permissively than the grammar actually is. For
     // example, it will allow "static construct *()". We'll report errors on
     // invalid forms later.
-    let foreignKeyword: Token;
+    let foreignKeyword: Token | undefined;
     if (this.match(Token.foreignKeyword)) {
       foreignKeyword = this.previous;
     }
 
-    let staticKeyword: Token;
+    let staticKeyword: Token | undefined;
     if (this.match(Token.staticKeyword)) {
       staticKeyword = this.previous;
     }
 
-    let constructKeyword: Token;
+    let constructKeyword: Token | undefined;
     if (this.match(Token.constructKeyword)) {
       constructKeyword = this.previous;
     }
 
     // TODO: Error on invalid combinations of above keywords.
 
-    let name: Token;
-    let parameters: Token[];
+    let name: Token | undefined;
+    let parameters: Token[] = [];
+    let body: Body | undefined;
 
     let allowParameters = false;
 
@@ -404,7 +405,6 @@ class Parser {
     }
     // TODO: Setters.
 
-    let body: Body;
     if (foreignKeyword === undefined) {
       this.consume(Token.leftBrace, "Expect '{' before method body.");
       body = this.finishBody(parameters);
@@ -418,13 +418,13 @@ class Parser {
       return <BreakStmt>{ type: 'BreakStmt', keyword: this.previous };
     }
 
+    let elseBranch: Stmt | undefined;
     if (this.match(Token.ifKeyword)) {
       this.consume(Token.leftParen, "Expect '(' after 'if'.");
       this.ignoreLine();
       const condition = this.expression();
       this.consume(Token.rightParen, "Expect ')' after if condition.");
       const thenBranch = this.statement();
-      let elseBranch: Stmt;
       if (this.match(Token.elseKeyword)) {
         elseBranch = this.statement();
       }
@@ -452,9 +452,9 @@ class Parser {
       return <WhileStmt>{ type: 'WhileStmt', condition, body };
     }
 
+    let value: Expr | undefined;
     if (this.match(Token.returnKeyword)) {
       const keyword = this.previous;
-      let value: Expr;
       if (this.peek() !== Token.line) {
         value = this.expression();
       }
@@ -488,18 +488,18 @@ class Parser {
   finishBody(parameters: Token[]): Body {
     // An empty block.
     if (this.match(Token.rightBrace)) {
-      return { type: 'Body', parameters, expression: null, statements: [] };
+      return { type: 'Body', parameters, expression: undefined, statements: [] };
     }
 
     if (!this.matchLine()) {
       const expr = this.expression();
       this.ignoreLine();
       this.consume(Token.rightBrace, "Expect '}' at end of block.");
-      return { type: 'Body', parameters, expression: expr, statements: null };
+      return { type: 'Body', parameters, expression: expr, statements: undefined };
     }
 
     if (this.match(Token.rightBrace)) {
-      return { type: 'Body', parameters, expression: null, statements: [] };
+      return { type: 'Body', parameters, expression: undefined, statements: [] };
     }
 
     const statements: Stmt[] = [];
@@ -512,7 +512,7 @@ class Parser {
       }
     }
 
-    return { type: 'Body', parameters, expression: null, statements };
+    return { type: 'Body', parameters, expression: undefined, statements };
   }
 
   expression(): Expr {
@@ -631,7 +631,7 @@ class Parser {
   // body:
   //   | "\n" ( definition "\n" )*
   //   | expression
-  methodCall(receiver, name): CallExpr {
+  methodCall(receiver: Expr | undefined, name: Token): CallExpr {
     var args = this.finishCall();
     return { type: 'CallExpr', receiver, name, args: args[0], blockArgument: args[1] };
   }
@@ -639,8 +639,9 @@ class Parser {
   // Parses the argument list for a method call. Returns a list containing the
   // argument list (if any) and block argument (if any). If either is missing,
   // the list element at that position is `null`.
-  finishCall(): [Expr[], Body] {
-    let args: Expr[];
+  finishCall(): [Expr[], Body | undefined] {
+    let args: Expr[] = [];
+    let blockArgument: Body | undefined;
 
     if (this.match(Token.leftParen)) {
       // Allow an empty argument list. Note that we treat this differently than
@@ -654,9 +655,8 @@ class Parser {
       }
     }
 
-    let blockArgument: Body;
+    let parameters: Token[] = [];
     if (this.match(Token.leftBrace)) {
-      let parameters: Token[];
       if (this.match(Token.pipe)) {
         parameters = this.parameterList();
         this.consume(Token.pipe, "Expect '|' after block parameters.");
@@ -711,7 +711,7 @@ class Parser {
     if (this.match(Token.leftParen)) { return this.grouping(); }
     if (this.match(Token.leftBracket)) { return this.listLiteral(); }
     if (this.match(Token.leftBrace)) { return this.mapLiteral(); }
-    if (this.match(Token.tname)) { return this.methodCall(null, this.previous); }
+    if (this.match(Token.tname)) { return this.methodCall(undefined, this.previous!); }
     if (this.match(Token.superKeyword)) { return this.superCall(); }
 
     if (this.match(Token.falseKeyword)) { return <BoolExpr>{ type: 'BoolExpr', value: this.previous }; }
@@ -797,7 +797,7 @@ class Parser {
   }
 
   superCall(): SuperExpr {
-    let name: Token;
+    let name: Token | undefined;
 
     if (this.match(Token.dot)) {
       // It's a named super call.
@@ -814,7 +814,7 @@ class Parser {
     let expressions: Expr[] = [];
 
     while (this.match(Token.interpolation)) {
-      strings.push(this.previous);
+      strings.push(this.previous!);
       expressions.push(this.expression());
     }
 
@@ -881,7 +881,7 @@ class Parser {
   }
 
   // Consumes one or more newlines.
-  consumeLine(error) {
+  consumeLine(error: string) {
     this.consume(Token.line, error);
     this.ignoreLine();
   }
@@ -890,8 +890,8 @@ class Parser {
   consumeNext(): Token {
     this.peek();
     this.previous = this.current;
-    this.current = null;
-    return this.previous;
+    this.current = undefined;
+    return this.previous!;
   }
 
   // Reads the next token if it is of [type]. Otherwise, discards it and
@@ -907,12 +907,12 @@ class Parser {
 
   // Returns the type of the next token.
   peek(): string {
-    if (this.current === null) { this.current = this.lexer.readToken(); }
-    return this.current.type;
+    if (this.current === undefined) { this.current = this.lexer.readToken(); }
+    return this.current.type!;
   }
 
   error(message: string): void {
-    this.problems.push([message, [this.current !== null ? this.current : this.previous]]);
+    this.problems.push([message, [this.current !== undefined ? this.current : this.previous]]);
   }
 }
 
